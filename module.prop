@@ -1,0 +1,6 @@
+id=a2dp_sink_yunluo
+name=A2DP Sink/Source Switcher (Redmi Pad yunluo, experimental)
+version=v0.1
+versionCode=1
+author=ayankarmakar913
+description=[EXPERIMENTAL] Toggle A2DP SINK (receive audio) / SOURCE (normal output) on Redmi Pad (yunluo) HyperOS 2 port (Pad 5 base), MTK/Android 15. Use at your own risk.
