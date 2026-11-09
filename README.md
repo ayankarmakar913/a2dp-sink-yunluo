@@ -1,31 +1,31 @@
-# A2DP Sink/Source Switcher — Redmi Pad (yunluo) [EXPERIMENTAL]
+# A2DP Sink/Source Switcher — Redmi Pad (yunluo)
 
 A Magisk/KernelSU/SukiSU/APatch module that switches the tablet between:
 - **SOURCE mode** (normal): tablet sends audio to Bluetooth headphones/speakers.
-- **SINK mode** (receiver): tablet receives A2DP audio from a phone/PC/TV and plays it through the tablet.
+- **SINK mode** (receiver): tablet receives A2DP audio from a phone/PC/TV and plays it through the tablet like a normal Bluetooth speaker.
 
 ## BEFORE YOU FLASH — READ THIS
 
-- **EXPERIMENTAL. TARGETED FOR: Redmi Pad (yunluo, 22081283G) on a HyperOS 2 port, MTK, Android 15.** Do **NOT** assume it works on other devices, other Redmi Pad variants, stock ROMs, or different ROM ports without testing and accepting risk.
-- **Tested environment:** **Redmi Pad (yunluo, 22081283G)**, **`AP3A.240905.015.A2`** (HyperOS 2 port), **Android 15 (SDK 35)**, MTK Bluetooth stack, rooted with **SukiSU (KernelSU-based)**. Magisk/KernelSU/APatch-compatible layout, but test on your setup.
-- **ROM/BT stack specific:** relies on A2DP role properties and Bluetooth stack behavior on this MTK/HyperOS port. The module includes hardening for role-state quirks, but behavior may vary by ROM/port.
-- **Root + runtime changes:** modifies Bluetooth profile/persist properties, may touch Bluetooth config/state (troubleshooting), enables an audio-focus overlay (best-effort), and restarts the Bluetooth stack. Pairings/settings may be affected during switches.
-- **Codecs (tested):** SBC and AAC sink observed working on the tested setup.
-- **Have recovery ready:** know how to disable/remove root modules if Bluetooth/behavior becomes problematic. **Back up important data.**
+- **TARGETED FOR: Redmi Pad (yunluo, 22081283G) on a HyperOS 2 port, MTK, Android 15.** Do **NOT** flash this on other devices or different ROMs unless you know exactly what you are doing and accept the risk.
+- **Tested on:** **Redmi Pad (yunluo, 22081283G)**, **`AP3A.240905.015.A2`** (HyperOS 2 port), **Android 15 (SDK 35)**, MTK Bluetooth stack, rooted with **SukiSU (KernelSU-based)**. Magisk/KernelSU/APatch-compatible layout.
+- **ROM/BT stack specific:** relies on this device/ROM’s Bluetooth stack behavior (A2DP role properties, service handling). Other ROMs/ports may not work.
+- **Root + runtime changes:** modifies Bluetooth profile/persist properties, may touch Bluetooth config/state, enables an audio-focus overlay, and manages the Bluetooth stack when switching modes.
+- **Have recovery ready:** know how to disable/remove root modules if Bluetooth/behavior becomes problematic. Back up important data.
 
 ## ⚠️ WARNING — DO THIS AT YOUR OWN RISK
 
 You are choosing to flash root-level code from the internet onto your device.
 - **Do this at your own risk. Don’t blame me.**
-- I am not responsible for bootloops, broken Bluetooth, lost pairings, bad audio, weird bugs, corrupted data, dead devices, or any other chaos.
-- **This is experimental.** You are the captain now — only proceed if you understand what you’re doing.
+- I am not responsible for bootloops, broken Bluetooth, lost pairings, bad audio, weird bugs, corrupted data, dead devices, thermonuclear incidents, alien invasions, timeline splits, or any other chaos.
+- **If you somehow start a nuclear war because of an A2DP sink module, I don’t care — I will laugh at you.**
+- You are the captain now. Only proceed if you understand what you’re doing.
 
 ## Install & control
-1. Download the zip from [**Releases**](../../releases/latest) and install in **SukiSU/KernelSU/Magisk/APatch**. **Reboot recommended.**
+1. Download the zip from [**Releases**](../../releases/latest) and install in **SukiSU/KernelSU/Magisk/APatch**. Reboot if needed.
 2. **WebUI** (if supported): module → **WebUI**.
    - **Toggle Source / Sink**
-   - **Restart A2DP Sink** appears **only in SINK mode** — use when reconnecting/switching the source device or if the sink gets stuck
-   - *If your manager’s WebUI exec isn’t supported, buttons may not run; use Action or commands below.*
+   - **Restart A2DP Sink** appears **only in SINK mode** (useful if reconnecting gets stuck)
+   - *If your manager’s WebUI exec isn’t supported, the buttons may not run; use the Action button or commands below.*
 3. **Action button** (if supported): toggles Source/Sink.
 4. **Commands (root fallback):**
    ```sh
@@ -36,16 +36,15 @@ You are choosing to flash root-level code from the internet onto your device.
    su -c /data/adb/a2dp-sink-yunluo restart    # restart BT, keep current mode
    su -c /data/adb/a2dp-sink-yunluo learn [AA:BB:CC:DD:EE:FF]  # troubleshooting for a problematic device
    su -c /data/adb/a2dp-sink-yunluo diag [60]  # capture logs/state
-   su -c /data/adb/a2dp-sink-yunluo concurrent # EXPERIMENTAL (not reliable on tested ROM)
    ```
 
-**Switching modes / after connecting:** changing **SOURCE ↔ SINK** (or `restart`) restarts Bluetooth — reconnection may take a moment. After connecting in SINK mode, wait a few seconds for audio to start.
+**SINK mode:** connect a phone/PC/TV to the tablet and play audio — it works like a normal Bluetooth speaker. To switch to a different source device, disconnect the current device and connect the other one.
 
-## No sound / can’t connect / troubleshooting
+## No sound / troubleshooting
 - **Quick fix:** toggle **Bluetooth OFF and ON on both the source device and the tablet**, then reconnect and play.
-- **SINK mode (no sound / source won’t connect):** tap **Restart A2DP Sink** in WebUI (SINK mode) or run `su -c /data/adb/a2dp-sink-yunluo restart`, then reconnect. `restart` keeps the current mode and re-verifies/corrects the BT role state.
-- **Codec/capability stuck on the source:** **Forget & re-pair** the tablet on the *source* device, reconnect for media audio, and check the source’s codec/audio settings while connected.
-- **Problematic device:** `su -c /data/adb/a2dp-sink-yunluo learn [addr]` can help as troubleshooting, then reconnect.
+- **SINK mode (if a connection gets stuck):** open **WebUI** and tap **Restart A2DP Sink** (SINK mode), then reconnect. Fallback: `su -c /data/adb/a2dp-sink-yunluo restart`.
+- **Source-side codec/capability issue:** **Forget & re-pair** the tablet on the source device, reconnect for media audio, and check the source’s audio/codec settings while connected.
+- **Problematic device:** `su -c /data/adb/a2dp-sink-yunluo learn [addr]` can help, then reconnect.
 - **Check state/codec (while playing):**
   ```sh
   su -c '/data/adb/a2dp-sink-yunluo status'
@@ -54,10 +53,8 @@ You are choosing to flash root-level code from the internet onto your device.
 - **Diagnosis:** `su -c /data/adb/a2dp-sink-yunluo diag 60` (capture while reproducing).
 
 ## Known limitations
-- **Exclusive modes (not simultaneous source+sink):** live concurrent routing did not work reliably in testing on this ROM — switch modes.
-- **Mode switching reconnects Bluetooth** and may take a moment.
-- **Experimental / port-specific:** behavior may vary across ROM builds.
-- **Media only (not phone calls):** A2DP sink does not route phone call audio/mic via this setup.
+- **Exclusive modes:** SOURCE and SINK are used separately (switch modes). Media audio only (not phone calls).
+- **Device/ROM specific:** behavior may vary on different ROMs/ports.
 
 ## Uninstall / recovery
 Disable/remove the module in your root manager and reboot. Or: `su -c /data/adb/a2dp-sink-yunluo off`.
@@ -66,5 +63,5 @@ Disable/remove the module in your root manager and reboot. Or: `su -c /data/adb/
 - Module source (scripts, `webroot/`)
 - `LICENSE` — MIT
 
-## License / Disclaimer
-MIT. Provided **as-is**, **no warranty**. **Use at your own risk. Don’t blame me.** This is experimental.
+## Disclaimer
+Provided **as-is**, with **no warranty**. **Use at your own risk. Don’t blame me.** If international diplomacy collapses over a Bluetooth codec negotiation, I will still laugh at you.
