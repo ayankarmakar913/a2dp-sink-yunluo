@@ -23,8 +23,7 @@ case "$ACTION" in
         set_sink_props || { echo "Could not set properties."; exit 1; }
         restart_bluetooth sink || true
         echo; show_status; echo
-        echo "Sink mode on (SBC/AAC supported; AAC observed working)."
-        echo "After connecting, wait a few seconds. No sound? BT off/on on both devices, or: restart"
+        echo "Sink mode on. No sound? Toggle BT off/on on both devices, or: restart"
         ;;
     concurrent|both|dual)
         echo "EXPERIMENTAL: enabling CONCURRENT A2DP source+sink (stack flag supported; routing not guaranteed)."
@@ -41,26 +40,11 @@ case "$ACTION" in
         restart_bluetooth "$_cm" || true
         echo; show_status; echo; echo "Restarted. Reconnect devices as needed."
         ;;
-    learn|fix)
-        _addr=${2:-}
-        if [ -n "$_addr" ] && [ "$_addr" != "--force-sbc" ]; then
-            _p=$(echo "$_addr" | tr 'A-F' 'a-f' | awk -F: '{if(NF>=3) print $1":"$2":"$3}')
-            if [ -n "$_p" ]; then _cur=""; [ -f "$LEARNED_INTEROP_FILE" ] && . "$LEARNED_INTEROP_FILE" 2>/dev/null && _cur=$A2DP_SINK_LEARNED; printf 'A2DP_SINK_LEARNED=%s\n' "$(echo "${_cur},${_p}" | tr ',' '\n' | awk 'NF && !seen[$0]++{out=(out==""?$0:out "," $0)} END{print out}')" > "$LEARNED_INTEROP_FILE"; echo "Learned: $_p"; else echo "Invalid address"; exit 1; fi
-        fi
-        echo "Learning addresses and (troubleshooting) forcing SBC for learned sources..."
-        _disc=$(discover_sink_blacklist_addrs 2>/dev/null | tr '\n' ',' | sed 's/,$//'); [ -n "$_disc" ] && echo "Discovered: $_disc"
-        A2DP_SINK_FORCE_SBC=true
-        mkdir -p /data/adb 2>/dev/null
-        if [ -f /data/adb/a2dp_sink_yunluo.conf ]; then grep -v '^A2DP_SINK_FORCE_SBC=' /data/adb/a2dp_sink_yunluo.conf > /data/adb/a2dp_sink_yunluo.conf.tmp 2>/dev/null || true; printf 'A2DP_SINK_FORCE_SBC=true\n' >> /data/adb/a2dp_sink_yunluo.conf.tmp; mv /data/adb/a2dp_sink_yunluo.conf.tmp /data/adb/a2dp_sink_yunluo.conf; else printf 'A2DP_SINK_FORCE_SBC=true\n' > /data/adb/a2dp_sink_yunluo.conf; fi
-        ensure_sink_interop || true
-        _cm=$(current_mode); [ "$_cm" = "sink" ] || [ "$_cm" = "concurrent" ] && { echo "Restarting Bluetooth..."; restart_bluetooth "$_cm" || true; }
-        show_status
-        ;;
     diag|diagnose)
         DURATION=${2:-60}; case "$DURATION" in ''|*[!0-9]*) DURATION=60;; esac; [ "$DURATION" -lt 15 ] && DURATION=15; [ "$DURATION" -gt 300 ] && DURATION=300
         OUT=/data/adb/a2dp_sink_yunluo_diag_$(date '+%Y%m%d_%H%M%S').txt; BASE=${OUT%.txt}
         echo "Capturing ${DURATION}s. Connect/play audio."
-        { echo "=== $(date) ==="; show_status; echo; echo "=== interop ==="; cat "$INTEROP_STANDARD_FILE" 2>/dev/null; echo; "$ANDROID_GETPROP" | grep -iE 'bluetooth.profile.(a2dp|avrcp)|a2dp' | sort; } > "$OUT" 2>&1
+        { echo "=== $(date) ==="; show_status; echo; "$ANDROID_GETPROP" | grep -iE 'bluetooth.profile.(a2dp|avrcp)|a2dp' | sort; } > "$OUT" 2>&1
         /system/bin/logcat -c >/dev/null 2>&1 || true
         i=0; while [ "$i" -lt "$DURATION" ]; do sleep 5; i=$((i+5)); { echo; echo "=== t+${i}s ==="; "$ANDROID_DUMPSYS" bluetooth_manager 2>/dev/null | grep -E 'A2DP Source State|A2DP Sink State|Active peer|Streaming|State|Codec|SEP|Configured|Requested' | head -45; } >> "$OUT" 2>&1; done
         /system/bin/logcat -d -v time > "${BASE}.logcat" 2>/dev/null
@@ -68,7 +52,7 @@ case "$ACTION" in
         echo "Saved: $OUT ${BASE}.logcat ${BASE}.bluetooth.txt"; show_status
         ;;
     *)
-        echo "Usage: $0 [toggle|on|off|concurrent|restart|status|learn [addr]|diag [sec]]"
-        echo "  concurrent = EXPERIMENTAL source+sink (stack-supported flag; routing may vary)"
+        echo "Usage: $0 [toggle|on|off|concurrent|restart|status|diag [sec]]"
+        echo "  concurrent = EXPERIMENTAL source+sink (routing may vary)"
         exit 1 ;;
 esac

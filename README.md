@@ -34,7 +34,6 @@ You are choosing to flash root-level code from the internet onto your device.
    su -c /data/adb/a2dp-sink-yunluo on         # SINK (receiver)
    su -c /data/adb/a2dp-sink-yunluo off        # SOURCE (normal BT output)
    su -c /data/adb/a2dp-sink-yunluo restart    # restart BT, keep current mode
-   su -c /data/adb/a2dp-sink-yunluo learn [AA:BB:CC:DD:EE:FF]  # troubleshooting for a problematic device
    su -c /data/adb/a2dp-sink-yunluo diag [60]  # capture logs/state
    ```
 
@@ -44,7 +43,6 @@ You are choosing to flash root-level code from the internet onto your device.
 - **Quick fix:** toggle **Bluetooth OFF and ON on both the source device and the tablet**, then reconnect and play.
 - **SINK mode (if a connection gets stuck):** open **WebUI** and tap **Restart A2DP Sink** (SINK mode), then reconnect. Fallback: `su -c /data/adb/a2dp-sink-yunluo restart`.
 - **Source-side codec/capability issue:** **Forget & re-pair** the tablet on the source device, reconnect for media audio, and check the source’s audio/codec settings while connected.
-- **Problematic device:** `su -c /data/adb/a2dp-sink-yunluo learn [addr]` can help, then reconnect.
 - **Check state/codec (while playing):**
   ```sh
   su -c '/data/adb/a2dp-sink-yunluo status'

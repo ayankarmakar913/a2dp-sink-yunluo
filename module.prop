@@ -1,6 +1,6 @@
 id=a2dp_sink_yunluo
 name=A2DP Sink/Source Switcher (Redmi Pad yunluo)
-version=v1.0.0
-versionCode=10
+version=v1.0.1
+versionCode=11
 author=ayankarmakar913
 description=Toggle A2DP SINK (receive audio) / SOURCE (normal Bluetooth output) on Redmi Pad (yunluo). SukiSU/KernelSU/Magisk/APatch. Use at your own risk.
